@@ -1,32 +1,26 @@
 # Data pipelines in production
 
-A workshop about taking pipelines from development to prod:
-
-* Initial work using AWS Lambda, S3, and EventBridge with Postgres (Neon)
-* Checklist for production: testing, deployment, data management policies, security, and monitoring
-* When + how to scale up: compute, storage, orchestration, and/or database
+A modular and customizable data pipeline using AWS Lambda, S3, SQS, and Step Functions with Postgres (Neon)
 
 
 ## Prereqs
 
-We'll be using a Python project (poetry) with the [US SEC's EDGAR API](https://www.sec.gov/search-filings/edgar-application-programming-interfaces). No API is required, merely a user-agent header.
+We'll be using a Python project (Poetry) with the [US SEC's EDGAR API](https://www.sec.gov/search-filings/edgar-application-programming-interfaces). No API is required, merely a user-agent header.
 
-For local deveopment, we'll be using Docker and pytest.
-
-For deployment, we'll be using Pulumi (Python) to ship to AWS.
+For deployment, we'll be using Pulumi (Python) to ship to AWS and Neon for a free hosted Postgres instance.
 
 
 ## Pipeline: Daily SEC filings ingest
 
-1. `company-ingest`:` Triggered daily at 2am. Fetch the latest available company submissions (JSON) for a short list of public tech companies: Meta, Apple, Amazon, Microsoft. Save them to S3.
+1. `company-ingest`:` Given a list of CIK values (companies). Fetch the latest available company submissions (JSON) for a short list of public tech companies. Save them to S3.
 
 1. `company-proc`: Next in Step Functions. Take JSON from S3 and update the company_facts and company_filings tables in Postgres. Company filings include Q-10 and K-8.
 
-1. `filings-ingest`: Nex in Step Functions. Get new filings docnames from Postgres. Fetch the new filings via the SEC EDGAR API as JSON and store them to S3 as csv's. 
+1. `filings-ingest`: Nex in Step Functions. Get new filings docnames from Postgres. Fetch the new filings via the SEC EDGAR API as JSON and store them to S3 as txt. Add sentiment analysis tasks to the queue.
 
-1. `embeddings`: Next in Step Functions, in parallel with Sentiment analysis. Generate embeddings for each new document using OpenAI's API and store results to Postgres (pg_vector extension). Use concurrent API requests to minimize Lambda lifetime.
+1. `embeddings`: Next in Step Functions, in parallel with Sentiment analysis. Generate embeddings for each new document (chunked if needed) using OpenAI's API and store results to Postgres (pg_vector extension). Use concurrent API requests and batch PG inserts to minimize Lambda lifetime.
 
-1. `sentiment`: AWS Lambda invoked by an SQS queue. Computes sentiment scores from document text and stores results in the company_filings table Postgres. 
+1. `sentiment`: AWS Lambda invoked by an SQS queue. Computes (mock) sentiment scores from document text and stores results in the company_filings table Postgres. 
 
 1. `filings-queue`: Next in Step Functions, in parallel with Embeddings generation. Monitors the SQS queue progress of "sentiment" Lambdas computing sentiment scores. Uses a callback pattern: monitors an SQS queue for progress and returns results when done.
 
@@ -106,3 +100,10 @@ poetry run pulumi up
 ```
 
 1. Tear down! `poetry run pulumi down`
+
+## Extensions
+
+1. Replace the mock sentiment analysis with a real one. Can you update the Lambda Layer and fit everything into an AWS Lambda?
+2. Update the sentiment analysis queue with an AWS Batch job. (It's the only service where Fargate can scale to zero!)
+3. What happens if you add more company CIKs? Or more filings types?
+4. Can you implement a good use case for our new vector embeddings?
