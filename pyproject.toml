@@ -1,0 +1,38 @@
+[tool.poetry]
+name = "mlops-data-pipeline-demo"
+version = "0.1.0"
+description = ""
+authors = ["A K <2465035+allpwrfulroot@users.noreply.github.com>"]
+readme = "README.md"
+packages = [
+    { include = "company-ingest", from = "src" },
+    { include = "company-proc", from = "src" },
+    { include = "embeddings", from = "src" },
+    { include = "error-handler", from = "src" },
+    { include = "filings-ingest", from = "src" },
+    { include = "filings-queue", from = "src" },
+    { include = "final-report", from = "src" },
+    { include = "sentiment", from = "src" }
+]
+
+[tool.poetry.dependencies]
+python = "^3.12"
+psycopg2-binary = "^2.9.9"
+requests = "^2.32.3"
+openai = "^1.46.1"
+python-dotenv = "^1.0.1"
+
+
+[tool.poetry.group.deploy.dependencies]
+pulumi = "^3.133.0"
+pulumi-aws = "^6.52.0"
+pulumi-awsx = "^2.15.0"
+poetry-plugin-export = "^1.8.0"
+
+
+[tool.poetry.group.develop.dependencies]
+boto3 = "^1.35.23"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

@@ -1,0 +1,26 @@
+# Python
+__pycache__/
+*.py[cod]
+*.so
+
+# Poetry
+.venv/
+venv
+dist/
+
+# Environment
+.env
+
+# IDEs and editors
+.idea/
+*.swp
+*.swo
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Project-specific
+*.log
+layers
+requirements.*.txt
