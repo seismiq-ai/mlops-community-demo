@@ -8,7 +8,6 @@ def lambda_handler(event, context):
     sqs = boto3.client("sqs")
     sfn = boto3.client("stepfunctions")
     queue_url = os.environ["SQS_URL"]
-    dlq_url = os.environ["DLQ_URL"]
 
     task_token = event["task_token"]
     batch_id = event["batch_id"]
@@ -49,25 +48,6 @@ def lambda_handler(event, context):
                 )
                 return
             
-            # Check for messages with the given batch_id in the DLQ
-            dlq_response = sqs.receive_message(
-                QueueUrl=dlq_url,
-                AttributeNames=["All"],
-                MessageAttributeNames=["batch_id"],
-                MaxNumberOfMessages=50,
-                VisibilityTimeout=0,
-                WaitTimeSeconds=0,
-            )
-
-            dlq_matching_messages = [
-                msg
-                for msg in dlq_response.get("Messages", [])
-                if msg.get("MessageAttributes", {})
-                .get("batch_id", {})
-                .get("StringValue")
-                == batch_id
-            ]
-
             # Wait before checking again
             time.sleep(sleep_time)
 
@@ -79,7 +59,6 @@ def lambda_handler(event, context):
         )
 
     except Exception as e:
-        # Handle any errors
         sfn.send_task_failure(
             taskToken=task_token, error="ExecutionError", cause=str(e)
         )

@@ -1,6 +1,3 @@
-import json
-
-
 def lambda_handler(event, context):
     # You can add final reporting logic here, such as:
     # - Querying for and summarizing final outputs (sanity checks)

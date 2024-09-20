@@ -90,7 +90,7 @@ DB_USER=
 DB_PASSWORD=
 ```
 
-1. Make sure you have cloud (here, AWS) credentials set up
+1. Make sure you have cloud (here, AWS) credentials set up with permissions
 
 1. Deploy!
 

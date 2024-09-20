@@ -65,7 +65,6 @@ def lambda_handler(event, context):
                 clean_content = html.unescape(content.decode('utf-8'))
                 text_content = re.sub('<[^<]+?>', '', clean_content)
                 text_content = re.sub(r'\s+', ' ', text_content).strip()
-                print(f"cleaned: {text_content}")
 
                 # Store the document in S3 with its original extension
                 file_extension = ".txt"

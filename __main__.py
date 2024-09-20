@@ -130,12 +130,14 @@ aws.iam.RolePolicyAttachment(
 # Create SQS queues
 dlq_queue = aws.sqs.Queue(
     "deadletter-queue",
+    name="sec-filings-deadletter-queue",
     message_retention_seconds=1209600,  # 14 days
 )
 
 sqs_queue = aws.sqs.Queue(
     "sentiment-queue",
-    visibility_timeout_seconds=20,
+    name="sec-filings-sentiment-queue",
+    visibility_timeout_seconds=300,
     receive_wait_time_seconds=20,
     redrive_policy=dlq_queue.arn.apply(lambda arn: json.dumps({
         "deadLetterTargetArn": arn,
